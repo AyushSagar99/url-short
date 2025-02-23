@@ -1,10 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+// Optional: A utility function for conditional class merging (if needed)
+function cn(...classes: string[]) {
+  return classes.filter(Boolean).join(" ");
+}
 
 export default function Home() {
   const [url, setUrl] = useState<string>("");
   const [shortenedUrl, setShortenedUrl] = useState<string>("");
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
   async function shortURL(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +36,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.text();
         setShortenedUrl(data);
+        setCopySuccess(false);
       } else {
         alert("Error shortening URL");
       }
@@ -31,40 +46,69 @@ export default function Home() {
     }
   }
 
+  async function copyToClipboard() {
+    if (shortenedUrl) {
+      try {
+        await navigator.clipboard.writeText(shortenedUrl);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error("Copy failed:", error);
+      }
+    }
+  }
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-  
-      <h2 className="text-xl text-gray-700 mb-6">URL Shortener</h2>
+    <main className="min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 flex items-center justify-center p-6">
+      <Card
+        className={cn(
+          "w-full max-w-md shadow-xl",
+          "hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+        )}
+      >
+        <CardHeader>
+          <CardTitle className="text-center text-3xl font-bold text-gray-800">
+            URL Shortener
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={shortURL} className="flex flex-col gap-4">
+            <Input
+              type="text"
+              placeholder="Enter your URL here..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="p-4"
+            />
+            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 transition">
+              Shorten
+            </Button>
+          </form>
 
-      <form onSubmit={shortURL} className="flex flex-col gap-4 bg-white p-6 shadow-md rounded-lg">
-        <input
-          type="text"
-          placeholder="Enter URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="p-3 w-80 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-        />
-        <button
-          type="submit"
-          className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
-        >
-          Shorten
-        </button>
-      </form>
-
-      {shortenedUrl && (
-        <div className="mt-6 bg-white p-4 shadow-md rounded-lg w-80 text-center">
-          <p className="text-gray-700 font-medium">Shortened URL:</p>
-          <a
-            href={shortenedUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 font-bold break-all hover:underline"
-          >
-            {shortenedUrl}
-          </a>
-        </div>
-      )}
+          {shortenedUrl && (
+            <div className="mt-6">
+              <p className="text-gray-700 font-medium mb-2">Shortened URL:</p>
+              <div className="flex items-center justify-between">
+                <a
+                  href={shortenedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 font-bold break-all hover:underline"
+                >
+                  {shortenedUrl}
+                </a>
+                <Button
+                  onClick={copyToClipboard}
+                  variant="secondary"
+                  className="ml-4"
+                >
+                  {copySuccess ? "Copied!" : "Copy"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }
