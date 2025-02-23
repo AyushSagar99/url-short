@@ -1,16 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
-// Optional: A utility function for conditional class merging (if needed)
+// Utility function to merge class names
 function cn(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
@@ -60,55 +57,67 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 flex items-center justify-center p-6">
-      <Card
-        className={cn(
-          "w-full max-w-md shadow-xl",
-          "hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-        )}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <CardHeader>
-          <CardTitle className="text-center text-3xl font-bold text-gray-800">
-            URL Shortener
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={shortURL} className="flex flex-col gap-4">
-            <Input
-              type="text"
-              placeholder="Enter your URL here..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="p-4"
-            />
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 transition">
-              Shorten
-            </Button>
-          </form>
-
-          {shortenedUrl && (
-            <div className="mt-6">
-              <p className="text-gray-700 font-medium mb-2">Shortened URL:</p>
-              <div className="flex items-center justify-between">
-                <a
-                  href={shortenedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 font-bold break-all hover:underline"
-                >
-                  {shortenedUrl}
-                </a>
-                <Button
-                  onClick={copyToClipboard}
-                  variant="secondary"
-                  className="ml-4"
-                >
-                  {copySuccess ? "Copied!" : "Copy"}
-                </Button>
-              </div>
-            </div>
+        <Card
+          className={cn(
+            "shadow-xl",
+            "hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
           )}
-        </CardContent>
-      </Card>
+        >
+          <CardHeader>
+            <CardTitle className="text-center text-3xl font-bold text-gray-800">
+              URL Shortener
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={shortURL} className="flex flex-col gap-4">
+              <Input
+                type="text"
+                placeholder="Enter your URL here..."
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="p-4"
+              />
+              
+                <ShimmerButton type="submit" className="shadow-2xl">
+                  <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
+                    Shorten URL
+                  </span>
+                </ShimmerButton>
+            </form>
+
+            {shortenedUrl && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="mt-6"
+              >
+                <p className="text-gray-700 font-medium mb-2">Shortened URL:</p>
+                <div className="flex items-center justify-between">
+                  <a
+                    href={shortenedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 font-bold break-all hover:underline"
+                  >
+                    {shortenedUrl}
+                  </a>
+                  <Button onClick={copyToClipboard} variant="secondary" className="ml-4">
+                    {copySuccess ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </main>
   );
 }
