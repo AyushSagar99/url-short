@@ -2,122 +2,119 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ShimmerButton } from "@/components/magicui/shimmer-button";
+import { Input } from "@/components/ui/input";
+import { MagicCard } from "@/components/magicui/magic-card";
+import { WarpBackground } from "@/components/magicui/warp-background";
 
-// Utility function to merge class names
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 export default function Home() {
-  const [url, setUrl] = useState<string>("");
-  const [shortenedUrl, setShortenedUrl] = useState<string>("");
-  const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const [url, setUrl] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function shortURL(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!url.trim()) {
-      alert("Please enter a valid URL");
-      return;
-    }
+  const handleShorten = async () => {
+    setLoading(true);
+    setError("");
+    setShortUrl("");
 
     try {
-      const response = await fetch(
-        `https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`
-      );
+      const response = await fetch("/api/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
 
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.text();
-        setShortenedUrl(data);
-        setCopySuccess(false);
+        setShortUrl(`http://${data.shortUrl}`);
       } else {
-        alert("Error shortening URL");
+        setError(data.error || "Failed to shorten URL");
       }
-    } catch (error) {
-      console.error("Shortening error:", error);
-      alert("Failed to shorten URL");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
-  }
-
-  async function copyToClipboard() {
-    if (shortenedUrl) {
-      try {
-        await navigator.clipboard.writeText(shortenedUrl);
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      } catch (error) {
-        console.error("Copy failed:", error);
-      }
-    }
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 flex items-center justify-center p-6">
+    <WarpBackground className="h-screen w-screen flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-[40rem]" // Increased from w-[35rem] to w-[40rem] (640px)
       >
-        <Card
-          className={cn(
-            "shadow-xl",
-            "hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-          )}
+        <MagicCard className="p-10 py-12 rounded-2xl shadow-xl w-full bg-white/90 backdrop-blur-md border border-gray-200"
+       
         >
-          <CardHeader>
-            <CardTitle className="text-center text-3xl font-bold text-gray-800">
-              URL Shortener
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={shortURL} className="flex flex-col gap-4">
-              <Input
-                type="text"
-                placeholder="Enter your URL here..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="p-4"
-              />
-              
-                <ShimmerButton type="submit" className="shadow-2xl">
-                  <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white lg:text-lg">
-                    Shorten URL
-                  </span>
-                </ShimmerButton>
-            </form>
+          <h1 className="text-4xl font-extrabold text-center text-gray-800">
+            🚀 URL Shortener
+          </h1>
+          <p className="text-center text-gray-600 text-lg mt-2">
+            Instantly shorten your long URLs
+          </p>
 
-            {shortenedUrl && (
+          <div className="space-y-6 mt-6">
+            <Input
+              type="text"
+              placeholder="Enter your URL (e.g., https://example.com)"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-400 transition-all"
+            />
+
+            <motion.div whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={handleShorten}
+                disabled={loading || !url}
+                className={`w-full py-4 rounded-lg text-lg font-semibold transition-all ${
+                  loading
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                }`}
+              >
+                {loading ? "Shortening..." : "Shorten URL"}
+              </Button>
+            </motion.div>
+
+            {/* Shortened URL Display */}
+            {shortUrl && (
               <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-100 p-6 rounded-lg text-center"
+              >
+                <p className="text-gray-700 font-medium text-lg">Your shortened URL:</p>
+                <a
+                  href={shortUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 font-bold hover:underline break-all text-lg"
+                >
+                  {shortUrl}
+                </a>
+              </motion.div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="mt-6"
+                className="text-red-500 text-lg text-center"
               >
-                <p className="text-gray-700 font-medium mb-2">Shortened URL:</p>
-                <div className="flex items-center justify-between">
-                  <a
-                    href={shortenedUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 font-bold break-all hover:underline"
-                  >
-                    {shortenedUrl}
-                  </a>
-                  <Button onClick={copyToClipboard} variant="secondary" className="ml-4">
-                    {copySuccess ? "Copied!" : "Copy"}
-                  </Button>
-                </div>
-              </motion.div>
+                {error}
+              </motion.p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </MagicCard>
       </motion.div>
-    </main>
+    </WarpBackground>
   );
 }
