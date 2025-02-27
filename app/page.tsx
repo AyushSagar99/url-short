@@ -12,6 +12,7 @@ export default function Home() {
   const [shortUrl, setShortUrl] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false); // State for copy button feedback
 
   const handleShorten = async () => {
     setLoading(true);
@@ -39,6 +40,14 @@ export default function Home() {
     }
   };
 
+  const handleCopy = () => {
+    if (shortUrl) {
+      navigator.clipboard.writeText(shortUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500); // Reset after 1.5 seconds
+    }
+  };
+
   return (
     <WarpBackground className="h-screen w-screen flex items-center justify-center px-4">
       <motion.div
@@ -47,7 +56,8 @@ export default function Home() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-3xl sm:w-[90%] md:w-[40rem]"
       >
-        <MagicCard className="p-6 sm:p-8 md:p-10 py-12 rounded-2xl shadow-xl w-full bg-white/90 backdrop-blur-md border border-gray-200">
+        <MagicCard className="p-6 sm:p-8 md:p-10 py-12 rounded-2xl shadow-xl w-full bg-white/90 backdrop-blur-md border border-gray-200 flex flex-col items-center text-center">
+
           <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-800">
             🚀 URL Shortener
           </h1>
@@ -78,17 +88,14 @@ export default function Home() {
               </Button>
             </motion.div>
 
-            {/* Shortened URL Display */}
+            {/* Shortened URL Display with Copy Button */}
             {shortUrl && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="bg-gray-100 p-4 sm:p-6 rounded-lg text-center"
+                className="bg-gray-100 p-4 sm:p-6 rounded-lg text-center flex flex-col sm:flex-row justify-center items-center gap-3 w-full"
               >
-                <p className="text-gray-700 font-medium text-sm sm:text-lg">
-                  Your shortened URL:
-                </p>
                 <a
                   href={shortUrl}
                   target="_blank"
@@ -97,6 +104,12 @@ export default function Home() {
                 >
                   {shortUrl}
                 </a>
+                <Button
+                  onClick={handleCopy}
+                  className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm"
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </Button>
               </motion.div>
             )}
 
