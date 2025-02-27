@@ -32,8 +32,9 @@ function NotFoundPage() {
       >
         <h1 className="text-5xl font-bold text-gray-800">404</h1>
         <p className="text-lg text-gray-600 mt-2">
-          Oops! The URL you are looking for doesn't exist or has expired.
-        </p>
+  Oops! The URL you are looking for doesn&apos;t exist or has expired.
+</p>
+
 
         {/* Illustration */}
         <motion.div
