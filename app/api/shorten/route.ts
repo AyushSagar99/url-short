@@ -7,9 +7,15 @@ function generateShortKey(): string {
 
 export async function POST(request: Request) {
   try {
-    const { url } = await request.json();
+    let { url } = await request.json();
 
-    if (!url || !/^https?:\/\/[^\s]+$/.test(url)) {
+    // 🔹 Auto-add 'https://' if missing
+    if (!/^https?:\/\//.test(url)) {
+      url = `https://${url}`;
+    }
+
+    // 🔹 Validate final URL format
+    if (!/^https?:\/\/[^\s]+$/.test(url)) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
