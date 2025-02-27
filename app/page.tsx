@@ -32,6 +32,7 @@ export default function Home() {
         setError(data.error || "Failed to shorten URL");
       }
     } catch (err) {
+      console.error("Error occurred:", err);
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
